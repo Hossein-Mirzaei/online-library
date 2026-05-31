@@ -1,0 +1,108 @@
+اسم دیتابیس: hoseiin1_db_library_site
+
+
+ جدول کاربران (users)
+sql
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,  
+    first_name VARCHAR(50) NOT NULL,          
+    last_name VARCHAR(50) NOT NULL,           
+    username VARCHAR(50) NOT NULL UNIQUE,     
+    address VARCHAR(255),                      
+    email VARCHAR(100) NOT NULL UNIQUE,       
+    password VARCHAR(255) NOT NULL,           
+    user_type ENUM('owner', 'admin', 'user') DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+);
+
+
+ جدول دسته‌بندی‌ها (categories)
+sql
+CREATE TABLE `categories` (
+    `category_id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `category_name` VARCHAR(50) NOT NULL,
+    `category_slug` VARCHAR(50) NOT NULL UNIQUE,
+    `category_icon` VARCHAR(50) DEFAULT NULL,
+    `category_description` TEXT DEFAULT NULL,
+    `parent_id` INT(11) DEFAULT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`parent_id`) REFERENCES `categories`(`category_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_persian_ci;
+
+
+ جدول کتاب‌ها (books)
+sql
+CREATE TABLE books (
+    book_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    author VARCHAR(100) NOT NULL,
+    publication_year YEAR NOT NULL,
+    image VARCHAR(255) NOT NULL,
+    category_id INT(11) DEFAULT NULL,
+    price INT NOT NULL,
+    caption TEXT,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ جدول سفارش‌ها (orders)
+sql
+CREATE TABLE orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    book_id INT NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    quantity INT NOT NULL,
+    total_price INT NOT NULL, 
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES books(book_id) ON DELETE CASCADE
+);
+
+
+جدول نظرات (comments)
+sql
+CREATE TABLE comments (
+    comment_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT NOT NULL,
+    user_id INT NOT NULL,
+    rating INT CHECK (rating >= 1 AND rating <= 5), 
+    comment TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    admin_response TEXT DEFAULT NULL,
+    response_date TIMESTAMP NULL, 
+    FOREIGN KEY (book_id) REFERENCES books(book_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+
+جدول  (messages)
+sql
+CREATE TABLE messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_name VARCHAR(100) NOT NULL,
+    user_email VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- جدول ذخیره چت‌های مشاوره
+CREATE TABLE `ai_chats` (
+    `chat_id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT(11) NOT NULL,
+    `message` TEXT NOT NULL,
+    `response` TEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_persian_ci;
+
+
+CREATE TABLE `admin_permissions` (
+    `permission_id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `admin_id` INT(11) NOT NULL,
+    `page_name` VARCHAR(100) NOT NULL,
+    `can_access` TINYINT(1) DEFAULT 0,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `admin_page_unique` (`admin_id`, `page_name`),
+    FOREIGN KEY (`admin_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_persian_ci;
